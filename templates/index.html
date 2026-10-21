@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPulse AI | Classroom &amp; Study Session Intelligence</title>
+    <!-- Modern Google Fonts for Academic UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons for Education & Study -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Custom Academic Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="academic-theme">
+    <!-- Top Academic Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-brand">
+            <div class="brand-icon academic-crest">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="brand-info">
+                <div class="brand-title-row">
+                    <h1>EduPulse AI</h1>
+                    <span class="campus-badge"><i class="fa-solid fa-building-columns"></i> Campus Edition</span>
+                </div>
+                <span class="subtitle">Smart Lecture Analytics &bull; Student Focus Tracking &bull; Sustained Attendance &bull; AI Pedagogical Coach</span>
+            </div>
+        </div>
+
+        <!-- Academic Lecture Context Selector -->
+        <div class="lecture-context-bar">
+            <div class="course-picker">
+                <i class="fa-solid fa-book-bookmark"></i>
+                <select id="courseSelect" class="course-dropdown">
+                    <option value="CS-301">CS-301: Deep Learning &amp; Neural Systems</option>
+                    <option value="MATH-204">MATH-204: Linear Algebra &amp; Vector Calculus</option>
+                    <option value="PHY-102">PHY-102: Classical Mechanics &amp; Wave Dynamics</option>
+                    <option value="BIO-210">BIO-210: Molecular Genetics &amp; Cellular Systems</option>
+                    <option value="DATA-101">DATA-101: Statistical Computing &amp; Analytics</option>
+                </select>
+            </div>
+            <div class="lecture-meta-pill">
+                <i class="fa-regular fa-clock"></i>
+                <span id="lectureTimeText">Lecture Period: 45 min &bull; Room 402B</span>
+            </div>
+        </div>
+
+        <div class="nav-controls">
+            <!-- System Status -->
+            <div class="status-pill" id="systemStatusPill">
+                <span class="pulse-dot online"></span>
+                <span id="systemStatusText">Class Live</span>
+            </div>
+
+            <!-- AI Engine Indicator -->
+            <div class="ai-mode-pill" id="aiModePill" title="Configure Google Gemini API Key">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span id="aiModeText">Offline Pedagogical Engine</span>
+            </div>
+
+            <!-- Controls -->
+            <button class="nav-btn" id="btnSettings" title="Classroom Settings &amp; API Key">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings</span>
+            </button>
+            <button class="nav-btn danger" id="btnResetSession" title="Reset Classroom Attendance &amp; Study Session">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>New Session</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Study Intelligence Dashboard Container -->
+    <main class="dashboard-container">
+
+        <!-- Study Session Mode Selector Banner -->
+        <section class="study-mode-strip">
+            <div class="mode-strip-label">
+                <i class="fa-solid fa-chalkboard-user"></i>
+                <span>Study Session Mode:</span>
+            </div>
+            <div class="mode-pill-group">
+                <button class="mode-btn active" data-mode="lecture" title="Standard didactic teaching with active student note-taking">
+                    <i class="fa-solid fa-chalkboard"></i> Interactive Lecture
+                </button>
+                <button class="mode-btn" data-mode="discussion" title="Interactive Q&A and student seminar debate">
+                    <i class="fa-solid fa-comments"></i> Q&amp;A &amp; Seminar
+                </button>
+                <button class="mode-btn" data-mode="studyhall" title="Quiet individual reading, problem-solving, or revision">
+                    <i class="fa-solid fa-book-open"></i> Silent Study Hall
+                </button>
+                <button class="mode-btn" data-mode="groupproject" title="Team collaboration and practical lab work">
+                    <i class="fa-solid fa-people-group"></i> Collaborative Lab
+                </button>
+            </div>
+            <div class="pomodoro-timer-box">
+                <i class="fa-solid fa-stopwatch"></i>
+                <span id="studyTimerText">Focus Timer: 25:00</span>
+                <button class="mini-timer-btn" id="btnToggleTimer" title="Toggle 25-min Study Focus Timer">Start Focus</button>
+            </div>
+        </section>
+
+        <!-- AI Teaching & Study Coach Banner (EPIC 4) -->
+        <section class="ai-suggestion-banner" id="suggestionBanner">
+            <div class="banner-left">
+                <div class="state-badge" id="sessionStateBadge">
+                    <span class="badge-dot"></span>
+                    <span id="sessionStateText">Deep Focus &amp; Steady Pacing</span>
+                </div>
+                <div class="suggestion-content">
+                    <div class="suggestion-label">
+                        <i class="fa-solid fa-lightbulb"></i> AI PEDAGOGICAL STUDY COACH &bull; REAL-TIME CLASS ADVICE
+                    </div>
+                    <p class="suggestion-text" id="aiSuggestionText">
+                        Lecture pacing is balanced and attentive. Students are actively following along and taking notes.
+                    </p>
+                </div>
+            </div>
+
+            <div class="banner-actions">
+                <button class="action-btn" id="btnPlayAudio" title="Listen to audio advice for instructor (TTS)">
+                    <i class="fa-solid fa-volume-high"></i>
+                    <span>Listen Study Tip</span>
+                </button>
+                <button class="action-btn secondary" id="btnGenerateCode" title="Generate quick practice quiz or code problem">
+                    <i class="fa-solid fa-clipboard-question"></i>
+                    <span>Practice Quiz</span>
+                </button>
+                <button class="action-btn outline" id="btnConceptDiagram" title="View visual pedagogical session summary">
+                    <i class="fa-solid fa-diagram-project"></i>
+                    <span>Concept Map</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Academic KPI Cards Grid (EPIC 6) -->
+        <section class="kpi-grid">
+            <!-- Card 1: Student Roll Call & Sustained Attendance -->
+            <div class="kpi-card academic-card-blue">
+                <div class="kpi-header">
+                    <div class="title-with-icon">
+                        <div class="kpi-icon green">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        <span class="kpi-title">Student Roll Call</span>
+                    </div>
+                    <span class="kpi-chip present">Active Class</span>
+                </div>
+                <div class="kpi-value-row">
+                    <span class="kpi-value" id="kpiLearnersCount">0</span>
+                    <span class="kpi-unit">students present</span>
+                </div>
+                <div class="kpi-meta">
+                    <span class="meta-tag verified" id="kpiVerifiedBadge">
+                        <i class="fa-solid fa-circle-check"></i> <span id="kpiVerifiedCount">0</span> Verified (&gt; 4.0s Focus)
+                    </span>
+                    <span class="meta-subtext">Sustained Study Check</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Lecture Visual Focus % -->
+            <div class="kpi-card academic-card-indigo">
+                <div class="kpi-header">
+                    <div class="title-with-icon">
+                        <div class="kpi-icon blue">
+                            <i class="fa-solid fa-book-open-reader"></i>
+                        </div>
+                        <span class="kpi-title">Lecture Visual Focus %</span>
+                    </div>
+                    <span class="kpi-chip optimal" id="kpiVisualTrend">
+                        <i class="fa-solid fa-arrow-trend-up"></i> Attentive
+                    </span>
+                </div>
+                <div class="kpi-value-row">
+                    <span class="kpi-value" id="kpiVisualScore">75%</span>
+                    <span class="kpi-subscore">gaze &amp; notes focus</span>
+                </div>
+                <div class="kpi-progress-bar">
+                    <div class="progress-fill blue" id="kpiVisualFill" style="width: 75%;"></div>
+                </div>
+                <div class="kpi-meta">
+                    <span id="kpiHeadPoseText">Board Gaze: Yaw 0.0&deg; &bull; Pitch 0.0&deg;</span>
+                    <span class="inactivity-indicator" id="kpiInactivityFlag">
+                        <i class="fa-solid fa-pen-nib"></i> Taking Notes
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card 3: Classroom Verbal Participation % -->
+            <div class="kpi-card academic-card-amber">
+                <div class="kpi-header">
+                    <div class="title-with-icon">
+                        <div class="kpi-icon amber">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                        </div>
+                        <span class="kpi-title">Classroom Dialogue &amp; Q&amp;A %</span>
+                    </div>
+                    <span class="speech-badge" id="kpiSpeechBadge">
+                        <span class="speech-dot"></span> Active Discussion
+                    </span>
+                </div>
+                <div class="kpi-value-row">
+                    <span class="kpi-value" id="kpiAudioScore">50%</span>
+                    <span class="kpi-subscore">participation index</span>
+                </div>
+                <div class="kpi-progress-bar">
+                    <div class="progress-fill amber" id="kpiAudioFill" style="width: 50%;"></div>
+                </div>
+                <div class="kpi-meta">
+                    <span id="kpiAudioDetails">RMS: 0.05 &bull; ZCR: 0.12</span>
+                    <span class="meta-subtext" id="kpiAudioModeText">Acoustic: Balanced</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Study Engagement Index (SEI) -->
+            <div class="kpi-card highlight academic-card-purple">
+                <div class="kpi-header">
+                    <div class="title-with-icon">
+                        <div class="kpi-icon purple">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                        <span class="kpi-title">Study Engagement Index (SEI)</span>
+                    </div>
+                    <span class="fused-weight-tag">65% Focus + 35% Q&amp;A</span>
+                </div>
+                <div class="kpi-value-row">
+                    <span class="kpi-value" id="kpiFusedScore">75%</span>
+                    <span class="grade-pill" id="kpiGradePill">Grade A &bull; Deep Focus</span>
+                </div>
+                <div class="kpi-progress-bar">
+                    <div class="progress-fill purple" id="kpiFusedFill" style="width: 75%;"></div>
+                </div>
+                <div class="kpi-meta">
+                    <span id="kpiTrendText"><i class="fa-solid fa-minus"></i> Steady Lecture Pacing</span>
+                    <span class="meta-subtext" id="kpiInactivityPenaltyText">No Fatigue Penalty</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid: Live Classroom Video Stream & Learning Analytics -->
+        <section class="content-split-grid">
+
+            <!-- Left Panel: Live Classroom & Study Desk Stream Card -->
+            <div class="panel-card video-card">
+                <div class="panel-header">
+                    <div class="panel-title-group">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                        <h2>Live Classroom &amp; Study Desk Stream</h2>
+                        <span class="source-tag" id="currentSourceTag">Simulation: 4 Student Desks</span>
+                    </div>
+
+                    <!-- Source Selector Toolbar -->
+                    <div class="video-toolbar">
+                        <button class="source-toggle-btn active" data-source="simulation" id="btnSourceSim" title="Run animated 4-student classroom study desks">
+                            <i class="fa-solid fa-desktop"></i> Study Desks
+                        </button>
+                        <button class="source-toggle-btn" data-source="webcam" id="btnSourceWebcam" title="Connect to classroom webcam">
+                            <i class="fa-solid fa-camera"></i> Webcam
+                        </button>
+                        <button class="source-toggle-btn" data-source="upload" id="btnSourceUpload" title="Upload recorded classroom lecture video">
+                            <i class="fa-solid fa-file-video"></i> Lecture Video
+                        </button>
+                        <input type="file" id="videoFileInput" accept="video/mp4,video/avi,video/mkv,video/webm" style="display: none;">
+                        <button class="icon-tool-btn" id="btnFullscreen" title="Fullscreen classroom view">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Video Display Frame Container -->
+                <div class="video-display-wrapper" id="videoWrapper">
+                    <img id="classroomVideoFeed" src="/video_feed" alt="Classroom Live Vision Stream" class="video-element">
+
+                    <!-- Floating HUD Overlay Indicators -->
+                    <div class="hud-watermark">
+                        <span class="hud-dot"></span>
+                        <span id="hudDetectorLabel">MediaPipe FaceMesh</span>
+                        <span class="hud-course-tag">CS-301</span>
+                    </div>
+
+                    <div class="hud-status-bottom">
+                        <span id="hudPresenceThreshold">Verification: 4.0s Continuous Study Focus</span>
+                        <span id="hudFramerate">Stream: ~30 FPS</span>
+                    </div>
+                </div>
+
+                <!-- Classroom Acoustic & Audio Simulation Profile Bar -->
+                <div class="simulation-control-bar">
+                    <div class="sim-ctrl-label">
+                        <i class="fa-solid fa-volume-low"></i> Classroom Acoustics:
+                    </div>
+                    <div class="sim-pill-group">
+                        <button class="sim-pill active" data-sim="balanced" title="Standard classroom lecturing & sporadic questions">Lecture Rhythm</button>
+                        <button class="sim-pill" data-sim="active_discussion" title="High verbal student debate & group questions">Seminar Q&amp;A</button>
+                        <button class="sim-pill" data-sim="lecture_silence" title="Silent reading, examination or individual exercises">Silent Study</button>
+                        <button class="sim-pill" data-sim="question_answer" title="Direct question & answer dialogues">Q&amp;A Dialogue</button>
+                    </div>
+                    <div class="mic-toggle-wrapper">
+                        <button class="mic-toggle-btn" id="btnToggleMic" title="Stream live browser microphone to measure real student voice engagement">
+                            <i class="fa-solid fa-microphone-slash"></i>
+                            <span id="micToggleText">Classroom Mic Off</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Real-Time Multimodal Trends (Chart.js) -->
+            <div class="panel-card chart-card">
+                <div class="panel-header">
+                    <div class="panel-title-group">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <h2>Lecture Attention &amp; Study Trends</h2>
+                    </div>
+                    <div class="chart-legend-custom">
+                        <span class="legend-item"><span class="legend-box purple"></span> Study Engagement (SEI)</span>
+                        <span class="legend-item"><span class="legend-box amber"></span> Classroom Dialogue</span>
+                        <span class="legend-item"><span class="legend-box blue"></span> Visual Focus</span>
+                    </div>
+                </div>
+
+                <div class="chart-canvas-wrapper">
+                    <canvas id="multimodalChart"></canvas>
+                </div>
+
+                <div class="chart-footer-meta">
+                    <div class="formula-box">
+                        <span class="formula-title">Pedagogical Index:</span>
+                        <code>SEI = (0.65 &times; Focus) + (0.35 &times; Dialogue) &bull; [Fatigue Penalty if Inactive]</code>
+                    </div>
+                    <button class="mini-btn" id="btnExportAnalytics" title="Export session metrics to CSV">
+                        <i class="fa-solid fa-download"></i> Export Study CSV
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Section: Classroom Attendance & Study Ledger (Gradebook Table) -->
+        <section class="panel-card table-card">
+            <div class="panel-header">
+                <div class="panel-title-group">
+                    <i class="fa-solid fa-address-book"></i>
+                    <h2>Classroom Attendance &amp; Study Ledger</h2>
+                    <span class="table-subtitle">Verified Study Presence &bull; Punctuality &bull; Continuous Engagement Tracking</span>
+                </div>
+
+                <div class="table-actions">
+                    <div class="table-stat">
+                        <span>Verified Present:</span>
+                        <strong id="tableVerifiedTotal">0</strong> / <span id="tableTotalCount">0</span>
+                    </div>
+                    <button class="btn-table-action" id="btnExportCSV" title="Export student attendance records to CSV">
+                        <i class="fa-solid fa-file-csv"></i> Export Gradebook CSV
+                    </button>
+                    <button class="btn-table-action" id="btnExportJSON" title="Export student attendance records to JSON">
+                        <i class="fa-solid fa-file-code"></i> Export JSON
+                    </button>
+                </div>
+            </div>
+
+            <!-- Attendance Data Table -->
+            <div class="table-responsive">
+                <table class="attendance-table" id="attendanceTable">
+                    <thead>
+                        <tr>
+                            <th>Student ID / Roll</th>
+                            <th>Student Name &amp; Study Role</th>
+                            <th>Check-In Time</th>
+                            <th>Last Active</th>
+                            <th>Study Duration</th>
+                            <th>Verification Status</th>
+                            <th>Visual Focus</th>
+                            <th>Learning Posture</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Initializing classroom roster and attendance tracking...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Hidden Audio Player for Generated TTS Speech -->
+    <audio id="ttsAudioPlayer" style="display: none;"></audio>
+
+    <!-- Modal 1: Settings & Gemini API Configuration -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-sliders"></i>
+                    <h3>Classroom &amp; AI Intelligence Settings</h3>
+                </div>
+                <button class="modal-close-btn" id="btnCloseSettings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="inputGeminiApiKey">
+                        <strong>Google Gemini API Key</strong>
+                        <span class="label-desc">Uses <code>gemini-2.0-flash</code>. Leave empty to use the 100% deterministic offline pedagogical rule engine.</span>
+                    </label>
+                    <div class="input-with-action">
+                        <input type="password" id="inputGeminiApiKey" placeholder="Enter AI Studio API Key (optional)">
+                        <button class="btn-toggle-vis" id="btnToggleKeyVis" type="button">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputSustainedThreshold">
+                        <strong>Sustained Attendance Threshold (seconds)</strong>
+                        <span class="label-desc">Minimum continuous study focus duration before marking "Present (Verified)".</span>
+                    </label>
+                    <input type="number" id="inputSustainedThreshold" value="4.0" min="1.0" max="30.0" step="0.5">
+                </div>
+
+                <div class="offline-engine-info">
+                    <div class="info-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="info-text">
+                        <strong>Academic Privacy Guarantee:</strong>
+                        All computer vision face meshes and audio spectrograms run locally on edge hardware. Zero video frames leave your school or university device.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btnCancelSettings">Cancel</button>
+                <button class="btn-save" id="btnSaveSettings">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Interactive Study Quiz & Code Practice Sandbox -->
+    <div class="modal-overlay" id="codeModal">
+        <div class="modal-dialog large">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-terminal"></i>
+                    <h3>Interactive Study Practice &amp; Code Sandbox</h3>
+                </div>
+                <button class="modal-close-btn" id="btnCloseCodeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="code-meta-bar">
+                    <div class="quiz-topic-badge">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span id="codeGeneratorLabel">Generator: Google GenAI</span>
+                    </div>
+                    <button class="btn-generate-fresh" id="btnRegenerateCode">
+                        <i class="fa-solid fa-arrows-rotate"></i> Generate Fresh Practice Quiz
+                    </button>
+                </div>
+                <div class="editor-wrapper">
+                    <label>Interactive Study Challenge &bull; Python Code Exercise:</label>
+                    <textarea id="codeEditor" spellcheck="false"></textarea>
+                </div>
+                <div class="output-wrapper">
+                    <div class="output-header">
+                        <span>Execution Output (Sandbox Process):</span>
+                        <span id="execMeta">Runtime: 0.0 ms</span>
+                    </div>
+                    <pre class="terminal-output" id="terminalOutput">Click "Execute Python Code" to test and verify the challenge.</pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btnCloseCodeBtn">Close</button>
+                <button class="btn-save" id="btnRunCode">
+                    <i class="fa-solid fa-play"></i> Execute Python Code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Pedagogical Concept Diagram Modal -->
+    <div class="modal-overlay" id="diagramModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-diagram-project"></i>
+                    <h3>Pedagogical Session Dynamics Concept Map</h3>
+                </div>
+                <button class="modal-close-btn" id="btnCloseDiagramModal">&times;</button>
+            </div>
+            <div class="modal-body diagram-body">
+                <div id="diagramContainer" class="diagram-render-area">
+                    <!-- SVG rendered dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-save" id="btnDismissDiagram">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Front-End Application Controller -->
+    <script src="/static/js/controller.js"></script>
+</body>
+</html>

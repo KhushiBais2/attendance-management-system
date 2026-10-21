@@ -1,0 +1,15 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Runtime data can include attendance records, uploads, and generated files.
+storage/*
+!storage/.gitkeep
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
