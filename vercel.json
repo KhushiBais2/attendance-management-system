@@ -10,11 +10,6 @@
       }
     }
   ],
-  "functions": {
-    "api/index.py": {
-      "includeFiles": "models/*.xml"
-    }
-  },
   "routes": [
     {
       "handle": "filesystem"
