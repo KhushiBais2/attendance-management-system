@@ -1411,44 +1411,441 @@ body.academic-theme {
 /* Responsive Breakpoints */
 @media (max-width: 1200px) {
     .kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
     .content-split-grid {
         grid-template-columns: 1fr;
+    }
+
+    .content-split-grid > *,
+    .kpi-card {
+        min-width: 0;
     }
 }
 
 @media (max-width: 768px) {
     .dashboard-container {
-        padding: 14px;
+        padding: 16px;
         gap: 16px;
     }
+
     .top-nav {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
         padding: 14px 16px;
+        position: relative;
     }
-    .lecture-context-bar {
+
+    .nav-brand,
+    .brand-info,
+    .lecture-context-bar,
+    .nav-controls {
         width: 100%;
-        flex-direction: column;
-        align-items: flex-start;
+        min-width: 0;
     }
+
+    .brand-title-row {
+        flex-wrap: wrap;
+    }
+
+    .brand-info .subtitle {
+        display: block;
+        line-height: 1.4;
+    }
+
+    .lecture-context-bar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: stretch;
+    }
+
+    .course-picker,
+    .lecture-meta-pill {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .course-picker {
+        flex: 1 1 100%;
+    }
+
+    .course-dropdown {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .lecture-meta-pill {
+        flex: 1 1 auto;
+    }
+
+    .nav-controls {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .nav-controls > * {
+        max-width: 100%;
+    }
+
+    .nav-btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
     .study-mode-strip {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        padding: 14px;
     }
+
+    .mode-pill-group {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .mode-btn {
+        flex: 1 1 calc(50% - 8px);
+        justify-content: center;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .pomodoro-timer-box {
+        align-self: flex-start;
+        max-width: 100%;
+    }
+
     .ai-suggestion-banner {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        padding: 16px;
     }
+
+    .banner-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .state-badge {
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    .suggestion-label {
+        line-height: 1.5;
+    }
+
     .banner-actions {
         width: 100%;
-        justify-content: flex-start;
-        overflow-x: auto;
-        padding-bottom: 4px;
+        flex-wrap: wrap;
+        gap: 8px;
     }
+
+    .banner-actions .action-btn {
+        flex: 1 1 calc(50% - 8px);
+        justify-content: center;
+        white-space: normal;
+        text-align: center;
+    }
+
     .kpi-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .kpi-card {
+        padding: 14px;
+    }
+
+    .kpi-header,
+    .kpi-meta {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .kpi-value-row {
+        flex-wrap: wrap;
+    }
+
+    .content-split-grid {
+        gap: 16px;
+    }
+
+    .panel-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+        padding: 14px 16px;
+    }
+
+    .panel-title-group {
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+
+    .panel-title-group h2 {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .video-toolbar {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .source-toggle-btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    .simulation-control-bar {
+        align-items: flex-start;
+        padding: 12px 14px;
+    }
+
+    .sim-pill-group {
+        flex-wrap: wrap;
+    }
+
+    .chart-legend-custom {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+    }
+
+    .chart-canvas-wrapper {
+        min-height: 280px;
+        padding: 14px;
+    }
+
+    .chart-footer-meta {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 12px 14px;
+    }
+
+    .formula-box {
+        overflow-wrap: anywhere;
+    }
+
+    .table-actions {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .table-stat {
+        flex: 1 1 100%;
+    }
+
+    .btn-table-action {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    .attendance-table {
+        min-width: 900px;
+    }
+
+    .modal-overlay {
+        align-items: flex-start;
+        padding: 12px;
+        overflow-y: auto;
+    }
+
+    .modal-dialog,
+    .modal-dialog.large {
+        width: 100%;
+        max-width: 560px;
+        max-height: calc(100dvh - 24px);
+        margin: auto;
+    }
+
+    .modal-header {
+        padding: 14px 16px;
+    }
+
+    .modal-title {
+        min-width: 0;
+        font-size: 0.95rem;
+    }
+
+    .modal-title h3 {
+        overflow-wrap: anywhere;
+    }
+
+    .modal-body {
+        padding: 16px;
+        max-height: none;
+    }
+
+    .modal-footer {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+
+    .modal-footer > button {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 10px;
+        gap: 12px;
+    }
+
+    .top-nav {
+        padding: 12px;
+    }
+
+    .nav-brand {
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .brand-icon.academic-crest {
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+    }
+
+    .brand-title-row h1 {
+        font-size: 1.1rem;
+    }
+
+    .brand-info .subtitle {
+        font-size: 0.7rem;
+    }
+
+    .campus-badge {
+        font-size: 0.6rem;
+    }
+
+    .status-pill,
+    .ai-mode-pill {
+        padding: 6px 10px;
+        font-size: 0.72rem;
+    }
+
+    .nav-btn {
+        padding: 8px 10px;
+        font-size: 0.75rem;
+    }
+
+    .mode-btn {
+        flex-basis: 100%;
+    }
+
+    .pomodoro-timer-box {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .banner-actions .action-btn {
+        flex-basis: 100%;
+    }
+
+    .kpi-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .kpi-card {
+        padding: 14px 16px;
+    }
+
+    .kpi-value {
+        font-size: 1.75rem;
+    }
+
+    .panel-header {
+        padding: 12px;
+    }
+
+    .video-toolbar {
+        gap: 6px;
+    }
+
+    .source-toggle-btn {
+        flex-basis: calc(50% - 6px);
+        padding: 8px 6px;
+        font-size: 0.7rem;
+    }
+
+    .icon-tool-btn {
+        flex: 1 0 auto;
+    }
+
+    .hud-watermark {
+        top: 8px;
+        left: 8px;
+        gap: 5px;
+        padding: 4px 8px;
+        font-size: 0.62rem;
+    }
+
+    .hud-status-bottom {
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+        gap: 8px;
+        font-size: 0.58rem;
+    }
+
+    .sim-pill {
+        flex: 1 1 calc(50% - 6px);
+        padding: 7px 6px;
+        font-size: 0.68rem;
+    }
+
+    .mic-toggle-btn {
+        max-width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .chart-canvas-wrapper {
+        min-height: 240px;
+        padding: 10px;
+    }
+
+    .chart-footer-meta {
+        padding: 10px 12px;
+    }
+
+    .btn-table-action {
+        flex-basis: 100%;
+    }
+
+    .table-subtitle {
+        margin-left: 0;
+    }
+
+    .modal-overlay {
+        padding: 8px;
+    }
+
+    .modal-dialog,
+    .modal-dialog.large {
+        max-height: calc(100dvh - 16px);
+    }
+
+    .modal-header {
+        padding: 12px;
+    }
+
+    .modal-body {
+        padding: 12px;
+    }
+
+    .modal-footer {
+        padding: 10px 12px;
     }
 }
