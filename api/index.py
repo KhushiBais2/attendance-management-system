@@ -8,7 +8,33 @@ if PROJECT_ROOT not in sys.path:
 
 from app import app
 
-# Vercel's Python runtime searches for the WSGI `app` object
-if __name__ == "__main__":
-    app.run()
 
+class VercelPathFixMiddleware:
+    """
+    WSGI Middleware to restore the original client request path on Vercel.
+    When Vercel rewrites routes to /api/index, PATH_INFO can be overwritten,
+    causing Flask to return 404 for existing routes.
+    """
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        original_path = (
+            environ.get("HTTP_X_NOW_PATHNAME") or
+            environ.get("HTTP_X_VERCEL_PATH") or
+            environ.get("HTTP_X_FORWARDED_PATH") or
+            environ.get("REQUEST_URI")
+        )
+
+        if original_path:
+            clean_path = original_path.split("?")[0].split("#")[0]
+            if clean_path:
+                environ["PATH_INFO"] = clean_path
+        elif environ.get("PATH_INFO") in ("/api/index", "/api/index.py"):
+            environ["PATH_INFO"] = "/"
+
+        return self.wsgi_app(environ, start_response)
+
+
+# Apply the middleware to the WSGI application
+app.wsgi_app = VercelPathFixMiddleware(app.wsgi_app)

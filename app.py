@@ -69,6 +69,7 @@ def allowed_file(filename):
 
 
 @app.route("/")
+@app.route("/api/index")
 def index():
     """Serves the primary Single-Page Application dashboard."""
     return render_template("index.html")
