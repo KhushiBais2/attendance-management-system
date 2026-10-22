@@ -7,6 +7,7 @@ __pycache__
 .venv
 env/
 venv/
+models/face_landmarker.task
 storage/uploaded_files/*
 storage/generated_audio/*
 storage/generated_code/*
