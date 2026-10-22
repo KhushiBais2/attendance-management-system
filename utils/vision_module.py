@@ -135,6 +135,10 @@ class VisionModule:
         task_path = os.path.join(self.models_dir, "face_landmarker.task")
         haar_face_path = os.path.join(self.models_dir, "haarcascade_frontalface_default.xml")
         haar_eye_path = os.path.join(self.models_dir, "haarcascade_eye.xml")
+        if not os.path.exists(haar_face_path):
+            haar_face_path = os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml")
+        if not os.path.exists(haar_eye_path):
+            haar_eye_path = os.path.join(cv2.data.haarcascades, "haarcascade_eye.xml")
 
         # 1. Try MediaPipe Tasks FaceLandmarker
         if os.path.exists(task_path):
@@ -566,6 +570,16 @@ class VisionModule:
 
         self._update_aggregate_metrics(detected_faces)
         return frame
+
+    def process_browser_frame(self, frame: np.ndarray):
+        """Processes a frame captured by a browser camera rather than a server camera."""
+        with self.lock:
+            if self.cap is not None:
+                self.cap.release()
+                self.cap = None
+            self.video_source_mode = "webcam"
+
+        self.process_frame(frame)
 
     def _update_aggregate_metrics(self, detected_records: list):
         """Calculates global class-level visual telemetry snapshot."""

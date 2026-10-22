@@ -112,6 +112,36 @@ def video_feed():
                     mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
+@app.route("/api/webcam_frame", methods=["POST"])
+def process_webcam_frame():
+    """Processes one JPEG frame captured by a browser webcam."""
+    if not request.mimetype or request.mimetype.lower() != "image/jpeg":
+        return jsonify({"success": False, "error": "Expected an image/jpeg frame"}), 400
+
+    max_frame_bytes = 1_500_000
+    if request.content_length and request.content_length > max_frame_bytes:
+        return jsonify({"success": False, "error": "Webcam frame is too large"}), 413
+
+    frame_bytes = request.stream.read(max_frame_bytes + 1)
+    if not frame_bytes or len(frame_bytes) > max_frame_bytes:
+        return jsonify({"success": False, "error": "Invalid or oversized webcam frame"}), 400
+
+    import cv2
+    import numpy as np
+
+    frame = cv2.imdecode(np.frombuffer(frame_bytes, dtype=np.uint8), cv2.IMREAD_COLOR)
+    if frame is None or frame.shape[1] > 1280 or frame.shape[0] > 720:
+        return jsonify({"success": False, "error": "Invalid webcam image dimensions"}), 400
+
+    vision_module.process_browser_frame(frame)
+    return jsonify({
+        "success": True,
+        "metrics": vision_module.get_latest_metrics(),
+        "records": vision_module.get_attendance_list(),
+        "sustained_threshold_seconds": vision_module.sustained_threshold
+    })
+
+
 @app.route("/api/status", methods=["GET"])
 def get_system_status():
     """System health check and module operational status."""

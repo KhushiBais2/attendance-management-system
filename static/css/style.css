@@ -748,6 +748,10 @@ body.academic-theme {
     display: block;
 }
 
+.video-element[hidden] {
+    display: none;
+}
+
 .hud-watermark {
     position: absolute;
     top: 14px;

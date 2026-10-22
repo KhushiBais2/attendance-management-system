@@ -10,6 +10,12 @@ document.addEventListener("DOMContentLoaded", () => {
         isPolling: true,
         pollIntervalMs: 1000,
         currentSource: "simulation",
+        webcamStream: null,
+        webcamFrameTimer: null,
+        webcamFrameBusy: false,
+        webcamGeneration: 0,
+        webcamMetrics: null,
+        webcamRecords: null,
         audioSimMode: "balanced",
         studyMode: "lecture",
         activeCourse: "CS-301: Deep Learning & Neural Systems",
@@ -74,6 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // DOM Elements - Classroom Video & HUD
     const classroomVideoFeed = document.getElementById("classroomVideoFeed");
+    const browserWebcamFeed = document.getElementById("browserWebcamFeed");
     const currentSourceTag = document.getElementById("currentSourceTag");
     const btnSourceSim = document.getElementById("btnSourceSim");
     const btnSourceWebcam = document.getElementById("btnSourceWebcam");
@@ -216,14 +223,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (metricsRes.ok) {
                 const metrics = await metricsRes.json();
+                if (AppState.currentSource === "webcam" && AppState.webcamMetrics) {
+                    metrics.vision = AppState.webcamMetrics;
+                    metrics.attendance_summary = {
+                        total_detected: AppState.webcamRecords.length,
+                        verified_count: AppState.webcamRecords.filter(record => record.is_verified).length
+                    };
+                }
                 updateKPIs(metrics);
                 updateAIIntelligence(metrics.ai_intelligence);
                 updateChartData(metrics.fusion);
             }
 
             if (attendanceRes.ok) {
-                const attendance = await attendanceRes.json();
-                updateAttendanceTable(attendance);
+                if (AppState.currentSource === "webcam" && AppState.webcamRecords) {
+                    updateAttendanceTable({
+                        records: AppState.webcamRecords,
+                        sustained_threshold_seconds: AppState.webcamMetrics
+                            ? AppState.webcamMetrics.sustained_threshold_seconds
+                            : AppState.sustainedThresholdSeconds
+                    });
+                } else {
+                    const attendance = await attendanceRes.json();
+                    updateAttendanceTable(attendance);
+                }
             }
         } catch (err) {
             console.error("Study telemetry fetch error:", err);
@@ -532,16 +555,121 @@ document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
     // 4. Video Source Switcher & Lecture Video Upload Handling
     // =========================================================================
+    const webcamCanvas = document.createElement("canvas");
+
+    function stopBrowserWebcam() {
+        AppState.webcamGeneration++;
+        if (AppState.webcamFrameTimer) {
+            clearInterval(AppState.webcamFrameTimer);
+            AppState.webcamFrameTimer = null;
+        }
+        if (AppState.webcamStream) {
+            AppState.webcamStream.getTracks().forEach(track => track.stop());
+            AppState.webcamStream = null;
+        }
+        AppState.webcamFrameBusy = false;
+        AppState.webcamMetrics = null;
+        AppState.webcamRecords = null;
+        browserWebcamFeed.srcObject = null;
+        browserWebcamFeed.hidden = true;
+        classroomVideoFeed.hidden = false;
+    }
+
+    async function sendBrowserWebcamFrame(generation) {
+        if (!AppState.webcamStream || AppState.webcamFrameBusy ||
+            generation !== AppState.webcamGeneration ||
+            browserWebcamFeed.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+            return;
+        }
+
+        AppState.webcamFrameBusy = true;
+        try {
+            const scale = Math.min(1, 640 / browserWebcamFeed.videoWidth);
+            webcamCanvas.width = Math.round(browserWebcamFeed.videoWidth * scale);
+            webcamCanvas.height = Math.round(browserWebcamFeed.videoHeight * scale);
+            webcamCanvas.getContext("2d").drawImage(
+                browserWebcamFeed, 0, 0, webcamCanvas.width, webcamCanvas.height
+            );
+
+            const frame = await new Promise(resolve => webcamCanvas.toBlob(resolve, "image/jpeg", 0.65));
+            if (!frame) throw new Error("Could not encode a webcam frame");
+
+            const response = await fetch("/api/webcam_frame", {
+                method: "POST",
+                headers: { "Content-Type": "image/jpeg" },
+                body: frame
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || `Frame processing failed (${response.status})`);
+            }
+            if (generation !== AppState.webcamGeneration) return;
+            AppState.webcamMetrics = result.metrics;
+            AppState.webcamRecords = result.records;
+            updateAttendanceTable({
+                records: result.records,
+                sustained_threshold_seconds: result.sustained_threshold_seconds
+            });
+            currentSourceTag.textContent = "Browser Webcam • Live Analysis";
+        } catch (err) {
+            if (generation !== AppState.webcamGeneration) return;
+            console.error("Webcam frame processing error:", err);
+            currentSourceTag.textContent = "Webcam connected • Analysis unavailable";
+        } finally {
+            if (generation === AppState.webcamGeneration) {
+                AppState.webcamFrameBusy = false;
+            }
+        }
+    }
+
+    async function startBrowserWebcam() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            const reason = window.isSecureContext
+                ? "This browser does not support webcam access"
+                : "Webcam access requires HTTPS or localhost";
+            throw new Error(reason);
+        }
+
+        const generation = ++AppState.webcamGeneration;
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: { width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+        if (generation !== AppState.webcamGeneration) {
+            stream.getTracks().forEach(track => track.stop());
+            return;
+        }
+        AppState.webcamStream = stream;
+        browserWebcamFeed.srcObject = stream;
+        classroomVideoFeed.hidden = true;
+        browserWebcamFeed.hidden = false;
+        classroomVideoFeed.removeAttribute("src");
+        await browserWebcamFeed.play();
+        currentSourceTag.textContent = "Browser Webcam • Starting analysis";
+        sendBrowserWebcamFrame(generation);
+        AppState.webcamFrameTimer = setInterval(() => sendBrowserWebcamFrame(generation), 1000);
+    }
+
     async function setVideoSource(source, videoPath = null) {
         try {
-            const res = await fetch("/api/video_source", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ source: source, video_path: videoPath })
-            });
-
-            const data = await res.json();
-            AppState.currentSource = data.active_source;
+            if (source === "webcam") {
+                stopBrowserWebcam();
+                await startBrowserWebcam();
+                AppState.currentSource = "webcam";
+            } else {
+                stopBrowserWebcam();
+                const res = await fetch("/api/video_source", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ source: source, video_path: videoPath })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.error || "Could not change video source");
+                }
+                AppState.currentSource = data.active_source;
+                classroomVideoFeed.src = `/video_feed?t=${Date.now()}`;
+            }
 
             [btnSourceSim, btnSourceWebcam, btnSourceUpload].forEach(btn => btn.classList.remove("active"));
             if (AppState.currentSource === "simulation") {
@@ -549,15 +677,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 currentSourceTag.textContent = "Simulation: 4 Student Desks";
             } else if (AppState.currentSource === "webcam") {
                 btnSourceWebcam.classList.add("active");
-                currentSourceTag.textContent = "Live Classroom Webcam";
+                if (!currentSourceTag.textContent.includes("Webcam")) {
+                    currentSourceTag.textContent = "Browser Webcam • Starting analysis";
+                }
             } else if (AppState.currentSource === "upload") {
                 btnSourceUpload.classList.add("active");
                 currentSourceTag.textContent = "Lecture Video Replay";
             }
-
-            classroomVideoFeed.src = `/video_feed?t=${Date.now()}`;
         } catch (err) {
             console.error("Error setting video source:", err);
+            if (source === "webcam") {
+                stopBrowserWebcam();
+                currentSourceTag.textContent = `Webcam unavailable: ${err.message}`;
+            } else {
+                currentSourceTag.textContent = `Video source error: ${err.message}`;
+            }
         }
     }
 
