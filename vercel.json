@@ -6,10 +6,21 @@
       "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
-        "includeFiles": "models/*.xml"
+        "includeFiles": [
+          "models/haarcascade_frontalface_default.xml",
+          "models/haarcascade_eye.xml"
+        ]
       }
     }
   ],
+  "functions": {
+    "api/index.py": {
+      "includeFiles": [
+        "models/haarcascade_frontalface_default.xml",
+        "models/haarcascade_eye.xml"
+      ]
+    }
+  },
   "routes": [
     {
       "handle": "filesystem"
