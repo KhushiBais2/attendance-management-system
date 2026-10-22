@@ -1,0 +1,15 @@
+.git
+.github
+__pycache__
+*.pyc
+*.pyo
+.env
+.venv
+env/
+venv/
+storage/uploaded_files/*
+storage/generated_audio/*
+storage/generated_code/*
+storage/attendance_logs.json
+storage/session_analytics.json
+

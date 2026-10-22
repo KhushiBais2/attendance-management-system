@@ -22,7 +22,15 @@ from utils.code_executor import CodeExecutor
 load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STORAGE_DIR = os.path.join(BASE_DIR, "storage")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+# Check if running in a Serverless environment (Vercel / AWS Lambda) where filesystem is read-only
+if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    STORAGE_DIR = "/tmp/storage"
+else:
+    STORAGE_DIR = os.path.join(BASE_DIR, "storage")
+
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 UPLOAD_DIR = os.path.join(STORAGE_DIR, "uploaded_files")
 AUDIO_DIR = os.path.join(STORAGE_DIR, "generated_audio")
@@ -32,7 +40,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(AUDIO_DIR, exist_ok=True)
 os.makedirs(CODE_DIR, exist_ok=True)
 
-app = Flask(__name__, template_folder="templates", static_folder="static")
+app = Flask(__name__, template_folder=TEMPLATES_DIR, static_folder=STATIC_DIR)
 CORS(app)
 
 # Configuration
