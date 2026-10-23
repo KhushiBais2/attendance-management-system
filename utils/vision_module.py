@@ -99,6 +99,7 @@ class VisionModule:
         self.haar_face_cascade = None
         self.haar_eye_cascade = None
         self.detector_type = "none"
+        self.detector_error = None
 
         self._init_detectors()
 
@@ -132,13 +133,49 @@ class VisionModule:
 
     def _init_detectors(self):
         """Initializes MediaPipe FaceLandmarker with fallback to OpenCV Haar Cascades."""
-        task_path = os.path.join(self.models_dir, "face_landmarker.task")
-        haar_face_path = os.path.join(self.models_dir, "haarcascade_frontalface_default.xml")
-        haar_eye_path = os.path.join(self.models_dir, "haarcascade_eye.xml")
-        if not os.path.exists(haar_face_path):
-            haar_face_path = os.path.join(cv2.data.haarcascades, "haarcascade_frontalface_default.xml")
-        if not os.path.exists(haar_eye_path):
-            haar_eye_path = os.path.join(cv2.data.haarcascades, "haarcascade_eye.xml")
+        project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        models_dir = self.models_dir
+        if not os.path.isabs(models_dir):
+            models_dir = os.path.join(project_root, models_dir)
+        task_path = os.path.join(models_dir, "face_landmarker.task")
+        haar_face_name = "haarcascade_frontalface_default.xml"
+        haar_eye_name = "haarcascade_eye.xml"
+        cascade_dirs = [models_dir]
+        opencv_data = getattr(cv2, "data", None)
+        if opencv_data and getattr(opencv_data, "haarcascades", None):
+            cascade_dirs.append(opencv_data.haarcascades)
+
+        haar_face_path = next(
+            (os.path.join(path, haar_face_name) for path in cascade_dirs
+             if os.path.isfile(os.path.join(path, haar_face_name))),
+            None
+        )
+        haar_eye_path = next(
+            (os.path.join(path, haar_eye_name) for path in cascade_dirs
+             if os.path.isfile(os.path.join(path, haar_eye_name))),
+            None
+        )
+
+        if haar_face_path:
+            try:
+                face_cascade = cv2.CascadeClassifier(haar_face_path)
+                if not face_cascade.empty():
+                    self.haar_face_cascade = face_cascade
+                    self.detector_type = "OpenCV Haar Cascade"
+                    if haar_eye_path:
+                        eye_cascade = cv2.CascadeClassifier(haar_eye_path)
+                        if not eye_cascade.empty():
+                            self.haar_eye_cascade = eye_cascade
+                    print(f"[VisionModule] Successfully loaded OpenCV Haar Cascade: {haar_face_path}")
+                else:
+                    self.detector_error = f"OpenCV could not load Haar cascade: {haar_face_path}"
+            except cv2.error as e:
+                self.detector_error = f"OpenCV Haar cascade initialization failed: {e}"
+        else:
+            self.detector_error = (
+                f"OpenCV Haar cascade file {haar_face_name} not found in "
+                f"{', '.join(cascade_dirs)}"
+            )
 
         # 1. Try MediaPipe Tasks FaceLandmarker
         if os.path.exists(task_path):
@@ -163,21 +200,11 @@ class VisionModule:
             except Exception as e:
                 print(f"[VisionModule] MediaPipe initialization error: {e}. Falling back to OpenCV.")
 
-        # 2. Try OpenCV Haar Cascades
-        if os.path.exists(haar_face_path):
-            try:
-                self.haar_face_cascade = cv2.CascadeClassifier(haar_face_path)
-                if not self.haar_face_cascade.empty():
-                    self.detector_type = "OpenCV Haar Cascade (Fallback)"
-                    print(f"[VisionModule] Successfully loaded OpenCV Haar Cascade Face Detector.")
-                    if os.path.exists(haar_eye_path):
-                        self.haar_eye_cascade = cv2.CascadeClassifier(haar_eye_path)
-                    return
-            except Exception as e:
-                print(f"[VisionModule] Haar cascade loading error: {e}")
+        if self.haar_face_cascade is not None:
+            return
 
         self.detector_type = "Heuristic Synthetic Detector"
-        print(f"[VisionModule] Running in Heuristic Detector mode.")
+        print(f"[VisionModule] {self.detector_error}. Running in Heuristic Detector mode.")
 
     def set_source_mode(self, mode: str, video_file_path: str = None) -> bool:
         """Switches between 'simulation', 'webcam', and 'upload'."""

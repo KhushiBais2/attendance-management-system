@@ -149,6 +149,7 @@ def get_system_status():
         "status": "online",
         "video_source": vision_module.video_source_mode,
         "detector_in_use": vision_module.detector_type,
+        "detector_error": vision_module.detector_error,
         "gemini_active": genai_agent.is_gemini_available,
         "active_ai_engine": genai_agent.last_used_source,
         "sustained_threshold_seconds": vision_module.sustained_threshold,

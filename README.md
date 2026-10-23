@@ -57,7 +57,7 @@ The application is structured into a clean 4-layer architecture:
 - **3D Head Pose Estimation**: Computes Yaw (turning left/right) and Pitch (looking down/up) using MediaPipe 3D landmark geometry and `cv2.solvePnP`. Approximates gaze alignment to evaluate visual focus.
 - **Landmark Movement & Inactivity Detection**: Tracks Euclidean displacement of facial centroids frame-to-frame. Prolonged stillness flags an `inactivity_detected` alert (e.g. drooping head, sleepiness, or static photo spoofing).
 - **Dual-Engine Architecture**: Automatically loads `MediaPipe FaceLandmarker` with local weights (`models/face_landmarker.task`), with automatic fallback to `OpenCV Haar Cascades` (`models/haarcascade_frontalface_default.xml`).
-- **Vercel Face Detection**: The Python function explicitly bundles the Haar Cascade XML models so face detection remains available in Vercel's serverless runtime, where the MediaPipe task model is excluded.
+- **Vercel Face Detection**: The Python function explicitly bundles both Haar Cascade XML models so OpenCV face detection remains available in Vercel's serverless runtime, where the MediaPipe task model is excluded. The `/api/status` endpoint reports the active detector and any cascade initialization error.
 - **Synthetic Classroom Simulation Mode**: When no physical camera is connected or during demonstrations, generates a high-fidelity synthetic classroom feed with animated student avatars, natural eye blinks, head turns, and staggered arrival times to demonstrate the sustained attendance verification transition in real time.
 
 ### EPIC 3: Audio Module (`utils/audio_module.py`)
