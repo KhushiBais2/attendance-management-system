@@ -169,7 +169,7 @@ class VisionModule:
                     print(f"[VisionModule] Successfully loaded OpenCV Haar Cascade: {haar_face_path}")
                 else:
                     self.detector_error = f"OpenCV could not load Haar cascade: {haar_face_path}"
-            except cv2.error as e:
+            except Exception as e:
                 self.detector_error = f"OpenCV Haar cascade initialization failed: {e}"
         else:
             self.detector_error = (
